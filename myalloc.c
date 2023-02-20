@@ -9,10 +9,8 @@ void *myalloc(int size)
 {
     int padded_block_size = PADDED_SIZE(sizeof(struct block));
 
-    // init memory space
     if (head == NULL)
     {
-        // mmap space, building a linked list node inside new space
         head = mmap(
             NULL, 1024, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
         head->next = NULL;
@@ -22,21 +20,19 @@ void *myalloc(int size)
 
     struct block *b = head;
 
-    while (b != NULL) // traverse linked list
+    while (b != NULL)
     {
-        // seeking the "first fit"
         bool is_free = (b->in_use == 0);
         bool has_enough_room = (b->size >= PADDED_SIZE(size));
 
         if (is_free && has_enough_room)
         {
-            // found!
-            b->in_use = 1;           // mark as "in use"
-            return PTR_OFFSET(b, 0); // return pointer to data following node + padding
+            b->in_use = 1;
+            return PTR_OFFSET(b, 0);
         }
-        b = b->next; // keep looking...
+        b = b->next;
     }
-    return NULL; // insufficient memory space
+    return NULL;
 }
 
 /**
@@ -62,17 +58,11 @@ void print_data(void)
 
     while (b != NULL)
     {
-        // Uncomment the following line if you want to see the pointer values
-        // printf("[%p:%d,%s]", b, b->size, b->in_use ? "used" : "free");
         printf("[%d,%s]", b->size, b->in_use ? "used" : "free");
         if (b->next != NULL)
-        {
             printf(" -> ");
-        }
-
         b = b->next;
     }
-
     printf("\n");
 }
 
