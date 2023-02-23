@@ -39,6 +39,7 @@ void *myalloc(int size)
  */
 void myfree(void *p)
 {
+    (void)p; // silence is golden
     return;
 }
 
@@ -72,6 +73,7 @@ int main(void)
 {
     void *p = myalloc(117);
     print_data();
+    printf("%p", p);
 
     return 0;
 }
