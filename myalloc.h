@@ -18,4 +18,3 @@ struct block
 void *myalloc(int size);
 void myfree(void *p);
 void print_data(void);
-int main(void);
