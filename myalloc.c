@@ -7,13 +7,11 @@ struct block *head = NULL;
  */
 void *myalloc(int size)
 {
-    int padded_block_size = PADDED_SIZE(sizeof(struct block));
-
     if (head == NULL)
     {
         head = mmap(
             NULL, 1024, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
-        head->size = 1024 - padded_block_size;
+        head->size = 1024 - PADDED_SIZE(sizeof(struct block));
         head->next = NULL;
         head->in_use = 0;
     }
