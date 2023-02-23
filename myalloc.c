@@ -13,8 +13,8 @@ void *myalloc(int size)
     {
         head = mmap(
             NULL, 1024, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
-        head->next = NULL;
         head->size = 1024 - padded_block_size;
+        head->next = NULL;
         head->in_use = 0;
     }
 
@@ -22,12 +22,13 @@ void *myalloc(int size)
 
     while (b != NULL)
     {
-        bool is_free = (b->in_use == 0);
-        bool has_enough_room = (b->size >= PADDED_SIZE(size));
+        bool is_free = !b->in_use;
+        bool has_enough_room = (b->size >= size);
 
         if (is_free && has_enough_room)
         {
             b->in_use = 1;
+            b->size = PADDED_SIZE(size);
             return PTR_OFFSET(b, 0);
         }
         b = b->next;
@@ -71,13 +72,8 @@ void print_data(void)
  */
 int main(void)
 {
-    void *p;
-
+    void *p = myalloc(117);
     print_data();
-    p = myalloc(16);
-    print_data();
-    p = myalloc(16);
-    printf("%p\n", p);
 
     return 0;
 }
