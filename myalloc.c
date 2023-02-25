@@ -27,7 +27,6 @@ void *myalloc(int size)
         bool is_free = !b->in_use;
         bool has_enough_room = (b->size >= size);
 
-        // split the current block if there's enough room
         if (is_free && has_enough_room)
         {
             int padded_requested_space = PADDED_SIZE(size);
@@ -39,20 +38,34 @@ void *myalloc(int size)
 
             if (block_splittable)
             {
-                // Add a new struct block with the remaining unused space
-                struct block *new = NULL;
-                new->size = (b->size - (padded_requested_space + padded_block_size));
-                new->next = NULL;
-                new->in_use = 0;
+                // create new block for the remaining unused space
+                int new_size = (b->size - (padded_requested_space + padded_block_size));
+                struct block new = {
+                    .next = NULL,
+                    .size = new_size,
+                    .in_use = 0};
 
-                // Wire it into the linked list
-                b->next = new;
+                // printf("Required space: %d\n", required_space);
+                // printf("Padded requested space: %d\n", padded_requested_space);
+                // printf("Padded block size: %d\n", padded_block_size);
+                printf(
+                    "New node: [%d,%s]\n",
+                    new_size,
+                    (new.in_use ? "used" : "free"));
+
+                // wire it into the linked list
+                b->next = &new;
+
+                // memcpy(
+                //     b + (padded_requested_space + padded_block_size),
+                //     &new,
+                //     sizeof(struct block));
             }
 
             b->in_use = 1;
             b->size = padded_requested_space;
 
-            return PTR_OFFSET(b, 0); // this offset is only true for the head, right?
+            return PTR_OFFSET(b, padded_block_size);
         }
         b = b->next;
     }
@@ -64,8 +77,12 @@ void *myalloc(int size)
  */
 void myfree(void *p)
 {
-    (void)p; // silence is golden
-    return;
+    if (p == NULL)
+        return;
+
+    // navigate back to header block
+    struct block *b = (p - sizeof(struct block));
+    b->in_use = 0;
 }
 
 /**
@@ -96,9 +113,46 @@ void print_data(void)
  */
 int main(void)
 {
-    void *p = myalloc(17);
-    print_data();
-    printf("%p", p);
+    // ====== Example 1 ======
+    void *p;
 
-    return 0;
+    p = myalloc(512);
+    print_data();
+
+    myfree(p);
+    print_data();
+
+    printf("EXPECTED\n");
+    printf("[512,used] -> [480,free]\n");
+    printf("[512,free] -> [480,free]\n\n\n");
+
+    // ====== Example 2 ======
+    head = NULL;
+
+    myalloc(10);
+    print_data();
+    myalloc(20);
+    print_data();
+    myalloc(30);
+    print_data();
+    myalloc(40);
+    print_data();
+    myalloc(50);
+    print_data();
+
+    // ====== Example 3 ======
+    head = NULL;
+
+    myalloc(10);
+    print_data();
+    p = myalloc(20);
+    print_data();
+    myalloc(30);
+    print_data();
+    myfree(p);
+    print_data();
+    myalloc(40);
+    print_data();
+    myalloc(10);
+    print_data();
 }
