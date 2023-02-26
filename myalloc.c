@@ -45,10 +45,10 @@ void *myalloc(int size)
                     .size = new_size,
                     .in_use = 0};
 
-                // "wire" it into the linked list by:
-                // placing it in memory at a given location & setting up the current block's next pointer
-                b[padded_block_size + padded_requested_space] = new;
-                b->next = &(b[padded_block_size + padded_requested_space]);
+                // "wire" new block node into the linked list
+                int b_to_new_offset = (padded_block_size + padded_requested_space);
+                b[b_to_new_offset] = new;        // placing it in memory at a given location
+                b->next = &(b[b_to_new_offset]); // setting it as the current block's next pointer
             }
 
             b->in_use = 1;
