@@ -30,25 +30,25 @@ void *myalloc(int size)
         if (is_free && has_enough_room)
         {
             int padded_requested_space = PADDED_SIZE(size);
+            int block_to_block_offset = padded_requested_space + padded_block_size;
 
             // space is big enough to split if current block size is greater than:
             // the requested size + the padded block + a minimum allocation of 16
-            int required_space = (padded_requested_space + padded_block_size + ALIGNMENT);
+            int required_space = (block_to_block_offset + ALIGNMENT);
             bool block_splittable = (bool)(b->size >= required_space);
 
             if (block_splittable)
             {
                 // create new block for the remaining unused space
-                int new_size = (b->size - (padded_requested_space + padded_block_size));
+                int new_size = (b->size - block_to_block_offset);
                 struct block new = {
                     .next = NULL,
                     .size = new_size,
                     .in_use = 0};
 
                 // "wire" new block node into the linked list
-                int b_to_new_offset = (padded_block_size + padded_requested_space);
-                b[b_to_new_offset] = new;        // place in memory at a relative location
-                b->next = &(b[b_to_new_offset]); // set new block as current block's next pointer
+                b[block_to_block_offset] = new;        // place in memory at a relative location
+                b->next = &(b[block_to_block_offset]); // set new block as current block's next pointer
             }
 
             b->in_use = 1;
