@@ -45,21 +45,10 @@ void *myalloc(int size)
                     .size = new_size,
                     .in_use = 0};
 
-                // printf("Required space: %d\n", required_space);
-                // printf("Padded requested space: %d\n", padded_requested_space);
-                // printf("Padded block size: %d\n", padded_block_size);
-                printf(
-                    "New node: [%d,%s]\n",
-                    new_size,
-                    (new.in_use ? "used" : "free"));
-
-                // wire it into the linked list
-                b->next = &new;
-
-                // memcpy(
-                //     b + (padded_requested_space + padded_block_size),
-                //     &new,
-                //     sizeof(struct block));
+                // "wire" it into the linked list by:
+                // placing it in memory at a given location & setting up the current block's next pointer
+                b[padded_block_size + padded_requested_space] = new;
+                b->next = &(b[padded_block_size + padded_requested_space]);
             }
 
             b->in_use = 1;
@@ -80,7 +69,7 @@ void myfree(void *p)
     if (p == NULL)
         return;
 
-    // navigate back to header block
+    // navigate to header block of given pointer
     struct block *b = (p - sizeof(struct block));
     b->in_use = 0;
 }
@@ -121,10 +110,6 @@ int main(void)
 
     myfree(p);
     print_data();
-
-    printf("EXPECTED\n");
-    printf("[512,used] -> [480,free]\n");
-    printf("[512,free] -> [480,free]\n\n\n");
 
     // ====== Example 2 ======
     head = NULL;
