@@ -51,8 +51,9 @@ void *myalloc(int size)
                 b->next = &(b[block_to_block_offset]); // set new block as current block's next pointer
             }
 
-            b->in_use = 1;
+            // TODO: move this expression (or block) into the if block above
             b->size = padded_requested_space;
+            b->in_use = 1;
 
             return PTR_OFFSET(b, padded_block_size);
         }
